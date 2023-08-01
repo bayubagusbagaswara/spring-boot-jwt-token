@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TokenRepository extends JpaRepository<Token, Integer> {
@@ -15,4 +16,7 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
             WHERE u.id = :userId AND (t.expired = false OR t.revoked = false)
             """)
     List<Token> findAllValidTokensByUser(Integer userId);
+
+    Optional<Token> findByToken(String token);
+
 }
