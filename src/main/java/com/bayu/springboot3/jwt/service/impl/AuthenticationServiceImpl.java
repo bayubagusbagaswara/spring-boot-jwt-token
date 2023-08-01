@@ -5,7 +5,10 @@ import com.bayu.springboot3.jwt.dto.AuthenticationRequest;
 import com.bayu.springboot3.jwt.dto.AuthenticationResponse;
 import com.bayu.springboot3.jwt.dto.RegisterRequest;
 import com.bayu.springboot3.jwt.model.Role;
+import com.bayu.springboot3.jwt.model.Token;
+import com.bayu.springboot3.jwt.model.TokenType;
 import com.bayu.springboot3.jwt.model.User;
+import com.bayu.springboot3.jwt.repository.TokenRepository;
 import com.bayu.springboot3.jwt.repository.UserRepository;
 import com.bayu.springboot3.jwt.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final TokenRepository tokenRepository;
 
     @Override
     public AuthenticationResponse register(RegisterRequest request) {
@@ -32,9 +36,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();
-        userRepository.save(user);
+
+        User savedUser = userRepository.save(user);
 
         String jwtToken = jwtService.generateToken(user);
+
+        saveUserToken(savedUser, jwtToken);
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
@@ -56,6 +63,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    private void saveUserToken(User savedUser, String jwtToken) {
+        Token token = Token.builder()
+                .user(savedUser)
+                .tokenValue(jwtToken)
+                .tokenType(TokenType.BEARER)
+                .expired(Boolean.FALSE)
+                .revoked(Boolean.FALSE)
+                .build();
+
+        tokenRepository.save(token);
     }
 
 }
