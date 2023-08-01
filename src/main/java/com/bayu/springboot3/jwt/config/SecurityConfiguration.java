@@ -14,9 +14,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
+import static com.bayu.springboot3.jwt.model.Permission.*;
+import static com.bayu.springboot3.jwt.model.Role.ADMIN;
+import static com.bayu.springboot3.jwt.model.Role.MANAGER;
+import static org.springframework.http.HttpMethod.*;
+
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(securedEnabled = true)
+@EnableMethodSecurity // ini berfungsi untuk security misal Role Permission (PreAuthorize) di controller
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
@@ -29,10 +34,26 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/v1/auth/**")
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+
+                        // yg bisa akses management adalah yg memiliki role ADMIN dan atau MANAGER
+                        .requestMatchers("/api/v1/management/**").hasAnyRole(ADMIN.name(), MANAGER.name())
+
+                        .requestMatchers(GET, "/api/v1/management/**").hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
+                        .requestMatchers(POST, "/api/v1/management/**").hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
+                        .requestMatchers(PUT, "/api/v1/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
+                        .requestMatchers(DELETE, "/api/v1/management/**").hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
+
+                        // yang bisa akses admin hanya yg memiliki role ADMIN
+                        // hasRole atau hasAuthority bisa di deklarasikan di controller
+//                        .requestMatchers("/api/v1/admin/**").hasRole(ADMIN.name())
+//
+//                        .requestMatchers(GET, "/api/v1/admin/**").hasAuthority(ADMIN_READ.name())
+//                        .requestMatchers(POST, "/api/v1/admin/**").hasAuthority(ADMIN_CREATE.name())
+//                        .requestMatchers(PUT, "/api/v1/admin/**").hasAuthority(ADMIN_UPDATE.name())
+//                        .requestMatchers(DELETE, "/api/v1/admin/**").hasAuthority(ADMIN_DELETE.name())
+
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
