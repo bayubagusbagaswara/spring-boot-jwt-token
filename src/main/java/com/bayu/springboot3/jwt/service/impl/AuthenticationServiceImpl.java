@@ -4,7 +4,6 @@ import com.bayu.springboot3.jwt.config.JwtService;
 import com.bayu.springboot3.jwt.dto.AuthenticationRequest;
 import com.bayu.springboot3.jwt.dto.AuthenticationResponse;
 import com.bayu.springboot3.jwt.dto.RegisterRequest;
-import com.bayu.springboot3.jwt.model.Role;
 import com.bayu.springboot3.jwt.model.Token;
 import com.bayu.springboot3.jwt.model.TokenType;
 import com.bayu.springboot3.jwt.model.User;
@@ -41,7 +40,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(request.getRole())
                 .build();
 
         User savedUser = userRepository.save(user);
