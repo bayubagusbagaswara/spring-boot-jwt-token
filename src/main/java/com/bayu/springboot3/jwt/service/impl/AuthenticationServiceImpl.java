@@ -17,6 +17,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -60,9 +62,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .orElseThrow();
 
         String jwtToken = jwtService.generateToken(user);
+
+        // the token will always update when the authentication is successful
+        revokeAllUserTokens(user);
+        saveUserToken(user, jwtToken);
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    private void revokeAllUserTokens(User user) {
+        List<Token> validUserTokens = tokenRepository.findAllValidTokensByUser(user.getId());
+        if (validUserTokens.isEmpty()) {
+            return;
+        }
+        validUserTokens.forEach(t -> {
+            t.setExpired(true);
+            t.setRevoked(true);
+        });
+        tokenRepository.saveAll(validUserTokens);
     }
 
     private void saveUserToken(User savedUser, String jwtToken) {
