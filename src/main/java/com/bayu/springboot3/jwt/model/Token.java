@@ -19,7 +19,7 @@ public class Token {
     private Integer id;
 
     @Column(name = "token")
-    private String strToken;
+    private String token;
 
     @Enumerated(EnumType.STRING)
     private TokenType tokenType;
