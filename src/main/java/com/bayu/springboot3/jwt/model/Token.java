@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "token")
+@Table(name = "tokens")
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,7 +19,7 @@ public class Token {
     private Integer id;
 
     @Column(name = "token")
-    private String token;
+    private String tokenValue;
 
     @Enumerated(EnumType.STRING)
     private TokenType tokenType;
